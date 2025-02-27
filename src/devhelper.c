@@ -113,13 +113,13 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	lockdownd_client_t lockdown = NULL;
 	if ((ret = idevice_new_with_options(&device, udid, IDEVICE_LOOKUP_USBMUX)) != IDEVICE_E_SUCCESS)
 	{
-		LOG(LOG_ERROR, "Error connecting to device: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "连接到设备时出错: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	if ((ret = lockdownd_client_new_with_handshake(device, &lockdown, "palera1n")) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Device is not in normal mode: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "设备没有处于正常模式: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_t node = NULL;
@@ -127,7 +127,7 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting ECID: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "获取ECID时出错: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_uint_val(node, &this_ecid);
@@ -138,7 +138,7 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting product type: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "获取设备类型时出错: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &productType);
@@ -149,7 +149,7 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting CPU type: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "获取CPU类型时出错: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &CPUArchitecture);
@@ -160,7 +160,7 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting product version: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "获取设备版本时出错: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &productVersion);
@@ -171,7 +171,7 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting build version: %d (%s)", ret, lockdownd_strerror(ret));
+		LOG(LOG_ERROR, "获取构建版本时出错: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &buildVersion);
@@ -200,12 +200,12 @@ int enter_recovery_cmd(const char* udid) {
 	idevice_t device = NULL;
 	lockdownd_client_t lockdown = NULL;
 	if (idevice_new(&device, udid) != IDEVICE_E_SUCCESS) {
-		LOG(LOG_ERROR, "Could not connect to device");
+		LOG(LOG_ERROR, "无法连接到设备");
 		return -1;
 	}
 	lockdownd_error_t ldret = lockdownd_client_new(device, &lockdown, "palera1n");
 	if (ldret != LOCKDOWN_E_SUCCESS) {
-		LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
+		LOG(LOG_ERROR, "无法连接到锁定设备: %s", lockdownd_strerror(ldret));
 		return -1;
 	}
 	ldret = lockdownd_enter_recovery(lockdown);
@@ -214,13 +214,13 @@ int enter_recovery_cmd(const char* udid) {
 		lockdown = NULL;
 		ldret = lockdownd_client_new_with_handshake(device, &lockdown, "palera1n");
 		if (ldret != LOCKDOWN_E_SUCCESS) {
-			LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
+			LOG(LOG_ERROR, "无法连接到锁定设备: %s", lockdownd_strerror(ldret));
 			return -1;
 		}
 		ldret = lockdownd_enter_recovery(lockdown);
 	}
 	if (ldret != LOCKDOWN_E_SUCCESS) {
-		LOG(LOG_ERROR, "Could not trigger entering recovery mode: %s", lockdownd_strerror(ldret));
+		LOG(LOG_ERROR, "无法触发进入恢复模式: %s", lockdownd_strerror(ldret));
 		return -1;
 	}
 	lockdownd_client_free(lockdown);
@@ -232,18 +232,18 @@ int reboot_cmd(const char* udid) {
 	idevice_t device = NULL;
 	lockdownd_client_t lockdown = NULL;
 	if (idevice_new(&device, udid) != IDEVICE_E_SUCCESS) {
-		LOG(LOG_ERROR, "Could not connect to device");
+		LOG(LOG_ERROR, "无法连接到设备");
 		return -1;
 	} else {
 		diagnostics_relay_client_t diag = NULL;
 		if (diagnostics_relay_client_start_service(device, &diag, "palera1n") == DIAGNOSTICS_RELAY_E_SUCCESS) {
 			if (diagnostics_relay_restart(diag, DIAGNOSTICS_RELAY_ACTION_FLAG_WAIT_FOR_DISCONNECT) != DIAGNOSTICS_RELAY_E_SUCCESS) {
-				LOG(LOG_ERROR, "Could not reboot device.");
+				LOG(LOG_ERROR, "无法重启设备");
 			}
 			(void)diagnostics_relay_goodbye(diag);
 			(void)diagnostics_relay_client_free(diag);
 		} else {
-			LOG(LOG_ERROR, "Could not connect to device.");
+			LOG(LOG_ERROR, "无法连接到设备");
 			return -1;
 		}
 		idevice_free(device);
@@ -266,14 +266,14 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 
 	if (idevice_new(&dev, udid) != IDEVICE_E_SUCCESS)
 	{
-		LOG(LOG_ERROR, "Error detecting device type");
+		LOG(LOG_ERROR, "检测设备类型错误");
 		return -1;
 	}
 	lerr = lockdownd_client_new_with_handshake(dev, &lockdown, "idevicediagnostics");
 	if ((lerr != LOCKDOWN_E_SUCCESS) || !lockdown)
 	{
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error connecting to lockdownd (lockdownd error %d: (%s))", lerr, lockdownd_strerror(lerr));
+		LOG(LOG_ERROR, "连接到锁定设备时出错 (%d: (%s))", lerr, lockdownd_strerror(lerr));
 		return -1;
 	}
 	lerr = lockdownd_start_service(lockdown, "com.apple.mobile.diagnostics_relay", &service);
@@ -284,7 +284,7 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 	if ((lerr != LOCKDOWN_E_SUCCESS) || !service)
 	{
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error starting diagnostics service (lockdownd error %d: (%s))\nUnlock the device and try again.", lerr, lockdownd_strerror(lerr));
+		LOG(LOG_ERROR, "启动诊断服务时出错 (错误 %d: (%s))\n请解锁设备后重试", lerr, lockdownd_strerror(lerr));
 		return -1;
 	}
 	derr = diagnostics_relay_client_new(dev, service, &diagnostics_client);
@@ -292,7 +292,7 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 	{
 		lockdownd_service_descriptor_free(service);
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error starting diagnostics client (diagnostics error %d)", derr);
+		LOG(LOG_ERROR, "启动诊断客户端时出错 (错误: %d)", derr);
 		return -1;
 	}
 	keys = plist_new_array();
@@ -306,14 +306,14 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 
 	if (derr != DIAGNOSTICS_RELAY_E_SUCCESS || !node)
 	{
-		LOG(LOG_ERROR, "Error getting passcode state (lockdownd error %d: (%s))", lerr, lockdownd_strerror(lerr));
+		LOG(LOG_ERROR, "获取密码状态时出错 (错误 %d: (%s))", lerr, lockdownd_strerror(lerr));
 		return -1;
 	}
 	status_node = plist_access_path(node, 2, "MobileGestalt", "Status");
 	if (!status_node)
 	{
 		plist_free(node);
-		LOG(LOG_ERROR, "Error getting passcode state (invalid status node)");
+		LOG(LOG_ERROR, "获取密码状态时出错 (无效状态)");
 		return -1;
 	}
 	char* passstat_status;
@@ -324,7 +324,7 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 			free(passstat_status);
 		passstat_status = NULL;
 		plist_free(node);
-		LOG(LOG_ERROR, "Error getting passcode state (invalid status)");
+		LOG(LOG_ERROR, "获取密码状态时出错 (无效状态)");
 		return -1;
 	}
 
@@ -333,14 +333,14 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 	if (!value_node)
 	{
 		plist_free(node);
-		LOG(LOG_ERROR, "Error getting passcode state (invalid value node)");
+		LOG(LOG_ERROR, "获取密码状态时出错 (无效值)");
 		return -1;
 	}
 	uint8_t passcode_state = 2;
 	plist_get_bool_val(value_node, &passcode_state);
 	plist_free(node);
 	*status = passcode_state;
-	LOG(LOG_VERBOSE4, "Passcode state: %hhu", *status);
+	LOG(LOG_VERBOSE4, "密码状态: %hhu", *status);
 	return 0;
 }
 
@@ -366,7 +366,7 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid) {
 	irecv_close(client);
 	return 0;
 err:
-	LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
+	LOG(LOG_ERROR, "libirecovery错误: %d (%s)", err, irecv_strerror(err));
 	return -1;
 }
 
@@ -382,7 +382,7 @@ int autoboot_cmd(const uint64_t ecid) {
 	if (err != IRECV_E_SUCCESS) goto err;
 	return 0;
 err:
-	LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
+	LOG(LOG_ERROR, "libirecovery错误: %d (%s)", err, irecv_strerror(err));
 		return -1;
 }
 
@@ -400,6 +400,6 @@ int exitrecv_cmd(const uint64_t ecid) {
 	if (err != IRECV_E_SUCCESS) goto err;
 	return 0;
 err:
-	LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
+	LOG(LOG_ERROR, "libirecovery错误: %d (%s)", err, irecv_strerror(err));
 	return -1;
 }
