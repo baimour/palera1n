@@ -37,26 +37,26 @@ char* ext_checkra1n = NULL;
 #define tmpdir getenv("TMPDIR") == NULL ? "/tmp" : getenv("TMPDIR")
 
 int exec_checkra1n(void) {
-	LOG(LOG_INFO, "About to execute checkra1n");
+	LOG(LOG_INFO, "即将执行checkra1n");
 	int fd_checkra1n, fd_pongo, ret;
 	char* checkra1n_path = NULL;
 #ifndef NO_CUSTOM_PONGO
 	if (pongo_path == NULL) {
 		pongo_path = malloc(strlen(tmpdir) + 20);
 		if (pongo_path == NULL) {
-			LOG(LOG_FATAL, "memory allocation failed\n");
+			LOG(LOG_FATAL, "内存分配失败\n");
 			return -1;
 		}
 		snprintf(pongo_path, strlen(tmpdir) + 20, "%s/Pongo.bin.XXXXXX", tmpdir);
 		fd_pongo = mkstemp(pongo_path);
 		if (fd_pongo == -1) {
-			LOG(LOG_FATAL, "Cannot open temporary file %s: %d (%s)", pongo_path, errno, strerror(errno));
+			LOG(LOG_FATAL, "无法打开临时文件%s: %d (%s)", pongo_path, errno, strerror(errno));
 			free(pongo_path);
 			return -1;
 		}
 		ssize_t didWrite_Pongo_bin = write(fd_pongo, Pongo_bin, Pongo_bin_len);
 		if (didWrite_Pongo_bin != (ssize_t)Pongo_bin_len) {
-			LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %" PRIu32 ": %d (%s)", pongo_path, didWrite_Pongo_bin, Pongo_bin_len, errno, strerror(errno));
+			LOG(LOG_FATAL, "写入%s的大小与预期不匹配: %zd != %" PRIu32 ": %d (%s)", pongo_path, didWrite_Pongo_bin, Pongo_bin_len, errno, strerror(errno));
 			close(fd_pongo);
 			unlink(pongo_path);
 			free(pongo_path);
@@ -70,20 +70,20 @@ int exec_checkra1n(void) {
 	} else {
 		checkra1n_path = malloc(strlen(tmpdir) + 20);
 		if (checkra1n_path == NULL) {
-			LOG(LOG_FATAL, "memory allocation failed\n");
+			LOG(LOG_FATAL, "内存分配失败\n");
 			return -1;
 		}
 		snprintf(checkra1n_path, strlen(tmpdir) + 20, "%s/checkra1n.XXXXXX", tmpdir);
 		fd_checkra1n = mkstemp(checkra1n_path);
 		if (fd_checkra1n == -1) {
-			LOG(LOG_FATAL, "Cannot open temporary file %s: %d (%s)", checkra1n_path, errno, strerror(errno));
+			LOG(LOG_FATAL, "无法打开临时文件%s: %d (%s)", checkra1n_path, errno, strerror(errno));
 			free(checkra1n_path);
 			checkra1n_path = NULL;
 			return -1;
 		}
 		ssize_t didWrite_checkra1n = write(fd_checkra1n, checkra1n, checkra1n_len);
 		if (didWrite_checkra1n != (ssize_t)checkra1n_len) {
-			LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %" PRIu32 ": %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
+			LOG(LOG_FATAL, "写入%s的大小与预期不匹配: %zd != %" PRIu32 ": %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
 			close(fd_checkra1n);
 			unlink(checkra1n_path);
 			free(checkra1n_path);
@@ -93,7 +93,7 @@ int exec_checkra1n(void) {
 		close(fd_checkra1n);
 		ret = chmod(checkra1n_path, 0700);
 		if (ret) {
-			LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
+			LOG(LOG_FATAL, "无法chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 			unlink(checkra1n_path);
 			free(checkra1n_path);
 			checkra1n_path = NULL;
@@ -116,18 +116,18 @@ int exec_checkra1n(void) {
 		}
 			libcheckra1nhelper_dylib_path = malloc(strlen(tmpdir) + 40);
 			if (libcheckra1nhelper_dylib_path == NULL) {
-				LOG(LOG_FATAL, "memory allocation failed\n");
+				LOG(LOG_FATAL, "内存分配失败\n");
 				return -1;
 			}
 			snprintf(libcheckra1nhelper_dylib_path, strlen(tmpdir) + 40, "%s/libcheckra1nhelper.dylib.XXXXXX", tmpdir);
 			int helper_fd = mkstemp(libcheckra1nhelper_dylib_path);
 			if (helper_fd == -1) {
-				LOG(LOG_FATAL, "Cannot open temporary file: %d (%s)", errno, strerror(errno));
+				LOG(LOG_FATAL, "无法打开临时文件: %d (%s)", errno, strerror(errno));
 				return -1;
 			}
 			ssize_t didWrite_libcheckra1nhelper = write(helper_fd, libcheckra1nhelper_dylib, libcheckra1nhelper_dylib_len);
 			if ((unsigned int)didWrite_libcheckra1nhelper != libcheckra1nhelper_dylib_len) {
-				LOG(LOG_FATAL, "Size written does not match expected: %zd != %" PRIu32 ": %d (%s)", didWrite_libcheckra1nhelper, libcheckra1nhelper_dylib_len, errno, strerror(errno));
+				LOG(LOG_FATAL, "写入大小与预期不符: %zd != %" PRIu32 ": %d (%s)", didWrite_libcheckra1nhelper, libcheckra1nhelper_dylib_len, errno, strerror(errno));
 				close(helper_fd);
 				unlink(libcheckra1nhelper_dylib_path);
 				return -1;
@@ -135,7 +135,7 @@ int exec_checkra1n(void) {
 			close(helper_fd);
 			ret = chmod(libcheckra1nhelper_dylib_path, 0700);
 			if (ret) {
-				LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", libcheckra1nhelper_dylib_path, errno, strerror(errno));
+				LOG(LOG_FATAL, "无法chmod %s: %d (%s)", libcheckra1nhelper_dylib_path, errno, strerror(errno));
 				unlink(libcheckra1nhelper_dylib_path);
 				return -1;
 			}
@@ -176,11 +176,11 @@ setenv_ra1n:
 	}, environ);
 	posix_spawn_file_actions_destroy(&action);
 	if (ret) {
-		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
+		LOG(LOG_FATAL, "无法posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		if (ext_checkra1n != NULL) unlink(checkra1n_path);
 		return -1;
 	}
-	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
+	LOG(LOG_VERBOSE2, "%s成功生成", checkra1n_path);
 	sleep(2);
 	if (ext_checkra1n == NULL) {
 		unlink(checkra1n_path);
