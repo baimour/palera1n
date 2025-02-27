@@ -67,19 +67,19 @@ bool set_found_pongo(bool val) {
 }
 
 uint64_t get_ecid_wait_for_dfu(void) {
-    LOG(LOG_VERBOSE5, "locking ecid wait for dfu mutex for get");
+    LOG(LOG_VERBOSE5, "正在锁定ECID等待DFU互斥来获取");
     pthread_mutex_lock(&ecid_dfu_wait_mutex);
     uint64_t ret = ecid_wait_for_dfu;
-    LOG(LOG_VERBOSE5, "UN-locking ecid wait for dfu mutex, ecid_wait_for_dfu value is %llu", ret);
+    LOG(LOG_VERBOSE5, "正在解锁ECID等待DFU互斥，ECID等待DFU值是%llu", ret);
     pthread_mutex_unlock(&ecid_dfu_wait_mutex);
     return ret;
 }
 
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid) {
-    LOG(LOG_VERBOSE5, "locking ecid wait for dfu mutex for set ecid_wait_for_dfu = %llu", ecid);
+    LOG(LOG_VERBOSE5, "正在锁定ECID等待DFU互斥，设置ECID等待DFU = %llu", ecid);
     pthread_mutex_lock(&ecid_dfu_wait_mutex);
     ecid_wait_for_dfu = ecid;
-    LOG(LOG_VERBOSE5, "UN-locking ecid wait for dfu mutex afrer setting ecid_wait_for_dfu");
+    LOG(LOG_VERBOSE5, "正在解锁ECID等待DFU互斥设置ECID等待DFU");
     pthread_mutex_unlock(&ecid_dfu_wait_mutex);
     return ecid;
 }
