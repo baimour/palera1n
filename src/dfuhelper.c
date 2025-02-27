@@ -64,22 +64,22 @@ static int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	int ret;
 	ret = devinfo_cmd(&dev, usbmuxd_device->udid);
 	if (ret != 0) {
-		LOG(LOG_ERROR, "Unable to get device information");
+		LOG(LOG_ERROR, "无法获取设备信息");
 		return 0;
 	}
 	if (strcmp(dev.CPUArchitecture, "arm64")) {
 		devinfo_free(&dev);
-		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
-		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
+		LOG(LOG_WARNING, "忽略non-arm64设备...");
+		LOG(LOG_WARNING, "palera1n不支持A12+，也永远不会支持 (arm64e)");
 		return -1;
 	}
 
 	if ((palerain_flags & palerain_option_device_info)) {
-		printf("Mode: normal\n");
-		printf("ProductType: %s\n", dev.productType);
-		printf("Architecture: %s\n", dev.CPUArchitecture);
-		printf("Version: %s\n", dev.productVersion);
-		printf("DisplayName: %s\n", dev.displayName);
+		printf("模式: 正常\n");
+		printf("产品类型: %s\n", dev.productType);
+		printf("架构: %s\n", dev.CPUArchitecture);
+		printf("版本: %s\n", dev.productVersion);
+		printf("显示名称: %s\n", dev.displayName);
 
 		device_has_booted = true;
 		set_spin(0);
@@ -92,32 +92,32 @@ static int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,")
 		)) {
 		if (!(palerain_flags & palerain_option_device_info))
-			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
+			LOG(LOG_VERBOSE2, "设备%s需要禁用密码", dev.productType);
 		unsigned char passcode_state = 0;
 		ret = passstat_cmd(&passcode_state, usbmuxd_device->udid);
 		if (ret != 0) {
-			LOG(LOG_ERROR, "Failed to get passcode state");
+			LOG(LOG_ERROR, "无法获取密码状态");
 			devinfo_free(&dev);
 			return -1;
 		}
 		if (passcode_state) {
-			LOG(LOG_ERROR, "Passcode must be disabled on this device");
+			LOG(LOG_ERROR, "必须在此设备上禁用密码");
 			if (!(palerain_flags & palerain_option_device_info))
-				LOG(LOG_ERROR, "Additionally, passcode must never be set since a restore on iOS 16+");
+				LOG(LOG_ERROR, "此外，在iOS 16+上恢复后，绝不能设置密码");
 			devinfo_free(&dev);
 			return -1;
 		}
 	}
 	
 	if (getenv("PALERA1N_BYPASS_PASSCODE_CHECK"))
-		LOG(LOG_WARNING, "Bypassed passcode check");	
+		LOG(LOG_WARNING, "绕过密码检查");	
 
 	if (verbose > 1) {
 		/* (LOG_VERBOSE - 3) or below*/
-		LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
+		LOG(LOG_INFO, "正在让UDID为%s的设备进入恢复模式", usbmuxd_device->udid);
 	} else {
 		/* At least (LOG_VERBOSE2 - 3) */
-		LOG(LOG_INFO, "Entering recovery mode");
+		LOG(LOG_INFO, "正在进入恢复模式");
 	}
 	enter_recovery_cmd(usbmuxd_device->udid);
 	devinfo_free(&dev);
@@ -142,79 +142,79 @@ static void* connected_recovery_mode(struct irecv_device_info* info) {
 	bdid = info->bdid;
 	info = NULL;
 	if (!cpid_is_arm64(cpid)) {
-		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
+		LOG(LOG_WARNING, "忽略non-arm64设备...");
 		return NULL;
 	}
 	sleep(1);
 	ret = autoboot_cmd(ecid);
 	if (ret) {
-		LOG(LOG_ERROR, "Cannot set auto-boot back to true");
+		LOG(LOG_ERROR, "无法将auto-boot恢复为true");
 		return NULL;
 	}
 #if !defined(DFUHELPER_AUTO_ONLY)
 	if (IS_APPLE_TV_4K) {
-		LOG(LOG_INFO, "Depending on your connection method, you might need to press a button on your cable/board during reboot");
+		LOG(LOG_INFO, "根据您的连接方式，在重新启动期间，您可能需要按下电缆/板上的按钮");
 	}
-	LOG(LOG_INFO, "Press Enter when ready for DFU mode");
+	LOG(LOG_INFO, "准备好进入DFU模式时，请按Enter键");
 	getchar();
 #endif
 	if (IS_APPLETV) {
 		if (IS_APPLE_TV_HD) {
-			step(10, 8, "Hold menu + play button", NULL, 0);
+			step(10, 8, "按住电源键+音量减按钮", NULL, 0);
 			set_ecid_wait_for_dfu(ecid);
 			ret = exitrecv_cmd(ecid);
 			if (ret) {
-				LOG(LOG_ERROR, "Cannot exit recovery mode");
+				LOG(LOG_ERROR, "无法退出恢复模式");
 				set_ecid_wait_for_dfu(0);
 				return NULL;
 			}
 			printf("\r\033[K");
-			step(8, 0, "Hold menu + play button", conditional, ecid);
+			step(8, 0, "按住电源键+音量减按钮", conditional, ecid);
 		} else if (IS_APPLE_TV_4K) {
-			step(2, 0, "About to reboot device", NULL, 0);
+			step(2, 0, "即将重启设备", NULL, 0);
 			set_ecid_wait_for_dfu(ecid);
 			ret = exitrecv_cmd(ecid);
 			if (ret) {
-				LOG(LOG_ERROR, "Cannot exit recovery mode");
+				LOG(LOG_ERROR, "无法退出恢复模式");
 				set_ecid_wait_for_dfu(0);
 				return NULL;
 			}
-			step(4, 0, "Waiting for device to reconnect in DFU mode", conditional, ecid);
+			step(4, 0, "等待设备在DFU模式下重新连接", conditional, ecid);
 		} else if (IS_APPLE_HOME) {
-			step(6, 4, "Put device in upside down orientation", NULL, 0);
+			step(6, 4, "将设备以倒置访问放置", NULL, 0);
 			set_ecid_wait_for_dfu(ecid);
 			ret = exitrecv_cmd(ecid);
 			if (ret) {
-				LOG(LOG_ERROR, "Cannot exit recovery mode");
+				LOG(LOG_ERROR, "无法退出恢复模式");
 				set_ecid_wait_for_dfu(0);
 				return NULL;
 			}
-			step(4, 0, "Put device upside down orientation", conditional, ecid);
+			step(4, 0, "将设备以倒置方向放置", conditional, ecid);
 		}
 	} else if (cpid != 0x8012) {
 		if (NO_PHYSICAL_HOME_BUTTON)
-			step(4, 2, "Hold volume down + side button", NULL, 0);
+			step(4, 2, "按住音量减 + 电源键按钮", NULL, 0);
 		else
-			step(4, 2, "Hold home + power button", NULL, 0);
+			step(4, 2, "按住Home键+电源键按钮", NULL, 0);
 		set_ecid_wait_for_dfu(ecid);
 		ret = exitrecv_cmd(ecid);
 		if (ret) {
-			LOG(LOG_ERROR, "Cannot exit recovery mode");
+			LOG(LOG_ERROR, "无法退出恢复模式");
 			set_ecid_wait_for_dfu(0);
 			return NULL;
 		}
 		printf("\r\033[K");
 		if (NO_PHYSICAL_HOME_BUTTON) {
-			step(2, 0, "Hold volume down + side button", NULL, 0);
-			step(10, 0, "Hold volume down button", conditional, ecid);
+			step(2, 0, "按住音量减 + 电源键按钮", NULL, 0);
+			step(10, 0, "按住音量减按钮", conditional, ecid);
 		} else {
-			step(2, 0, "Hold home + power button", NULL, 0);
-			step(10, 0, "Hold home button", conditional, ecid);
+			step(2, 0, "按住Home键+电源键按钮", NULL, 0);
+			step(10, 0, "按住Home键", conditional, ecid);
 		}
 	}
 	if (get_ecid_wait_for_dfu() == ecid) {
-		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
-		LOG(LOG_INFO, "Waiting for device to reconnect...");
+		LOG(LOG_WARNING, "哎呀，设备没有进入DFU模式");
+		LOG(LOG_INFO, "等待设备重新连接...");
 		set_ecid_wait_for_dfu(0);
 		return NULL;
 	}
@@ -227,12 +227,12 @@ static void* connected_dfu_mode(struct irecv_device_info* info) {
 	if (get_ecid_wait_for_dfu() == info->ecid) {
 		set_ecid_wait_for_dfu(0);
 		puts("");
-		LOG(LOG_INFO, "Device entered DFU mode successfully");
+		LOG(LOG_INFO, "设备成功进入 DFU 模式");
 	}
 	unsigned int bdid = info->bdid;
 	unsigned int cpid = info->cpid;
 	if (IS_APPLE_HOME) {
-		step(2, 0, "Put device in upright orientation", NULL, 0);
+		step(2, 0, "将设备直立放置", NULL, 0);
 	}
 	set_spin(0);
 	unsubscribe_cmd();
@@ -244,13 +244,13 @@ static void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	if (event->device.conn_type != CONNECTION_TYPE_USB) return;
 	switch (event->event) {
 	case UE_DEVICE_ADD:
-		LOG(LOG_VERBOSE, "Normal mode device connected");
+		LOG(LOG_VERBOSE, "在正常模式下设备已连接");
 		if ((palerain_flags & palerain_option_exit_recovery)) {
 			break;
 		} else if ((palerain_flags & palerain_option_reboot_device)) {
 			int ret = reboot_cmd(event->device.udid);
 			if (!ret) {
-				LOG(LOG_INFO, "Restarted device");
+				LOG(LOG_INFO, "已重新启动设备");
 				set_spin(0);
 				unsubscribe_cmd();
 			}
@@ -260,7 +260,7 @@ static void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 		connected_normal_mode(&event->device);
 		break;
 	case UE_DEVICE_REMOVE:
-		LOG(LOG_VERBOSE, "Normal mode device disconnected");
+		LOG(LOG_VERBOSE, "正常模式设备已断开连接");
 		break;
 	}
 }
@@ -276,16 +276,16 @@ static void irecv_device_event_cb(const irecv_device_event_t *event, void* userd
 				event->mode == IRECV_K_RECOVERY_MODE_3 || 
 				event->mode == IRECV_K_RECOVERY_MODE_4) {
 				if (!(palerain_flags & palerain_option_device_info))
-					LOG(LOG_VERBOSE, "Recovery mode device %" PRIu64 " connected", event->device_info->ecid);
+					LOG(LOG_VERBOSE, "恢复模式设备: %" PRIu64 " 已连接", event->device_info->ecid);
 				if ((palerain_flags & palerain_option_exit_recovery)) {
 					ret = exitrecv_cmd(event->device_info->ecid);
 					if (!ret) {
-						LOG(LOG_INFO, "Exited recovery mode");
+						LOG(LOG_INFO, "退出恢复模式");
 						device_has_booted = true;
 						set_spin(0);
 						unsubscribe_cmd();
 					} else {
-						LOG(LOG_WARNING, "Could not exit recovery mode");
+						LOG(LOG_WARNING, "无法退出恢复模式");
 					}
 					if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
 					pthread_exit(NULL);
@@ -296,11 +296,11 @@ static void irecv_device_event_cb(const irecv_device_event_t *event, void* userd
 					recvinfo_t info;
 					ret = recvinfo_cmd(&info, event->device_info->ecid);
 					if (ret) {
-						LOG(LOG_WARNING, "Could not get info from device");
+						LOG(LOG_WARNING, "无法从设备获取信息");
 					} else {
-						printf("Mode: Recovery\n");
-						printf("ProductType: %s\n", info.product_type);
-						printf("DisplayName: %s\n", info.display_name);
+						printf("模式: 恢复模式\n");
+						printf("产品类型: %s\n", info.product_type);
+						printf("显示名称: %s\n", info.display_name);
 
 						device_has_booted = true;
 						set_spin(0);
@@ -316,17 +316,17 @@ static void irecv_device_event_cb(const irecv_device_event_t *event, void* userd
 				pthread_create(&recovery_thread, NULL, (pthread_start_t)connected_recovery_mode, event->device_info);
 			} else if (event->mode == IRECV_K_DFU_MODE) {
 				if (!(palerain_flags & palerain_option_device_info))
-					LOG(LOG_VERBOSE, "DFU mode device %" PRIu64 " connected", event->device_info->ecid);
+					LOG(LOG_VERBOSE, "DFU模式设备: %" PRIu64 " 已连接", event->device_info->ecid);
 
 				if ((palerain_flags & palerain_option_device_info)) {
 					recvinfo_t info;
 					ret = recvinfo_cmd(&info, event->device_info->ecid);
 					if (ret) {
-						LOG(LOG_WARNING, "Could not get info from device");
+						LOG(LOG_WARNING, "无法从设备获取信息");
 					} else {
-						printf("Mode: DFU\n");
-						printf("ProductType: %s\n", info.product_type);
-						printf("DisplayName: %s\n", info.display_name);
+						printf("模式: DFU模式\n");
+						printf("产品类型: %s\n", info.product_type);
+						printf("显示名称: %s\n", info.display_name);
 
 						device_has_booted = true;
 						set_spin(0);
@@ -347,7 +347,7 @@ static void irecv_device_event_cb(const irecv_device_event_t *event, void* userd
 			}
 			break;
 		case IRECV_DEVICE_REMOVE:
-			LOG(LOG_VERBOSE, "Recovery mode device disconnected");
+			LOG(LOG_VERBOSE, "恢复模式设备已断开连接");
 		break;
 	}
 }
