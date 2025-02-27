@@ -19,10 +19,10 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 	int fd = open(filename, O_RDONLY);
 	LOG(LOG_VERBOSE5, "override_file() called!");
 	if (fd == -1) {
-		LOG(LOG_ERROR, "Cannot open file %s: %d (%s)", filename, errno, strerror(errno));
+		LOG(LOG_ERROR, "无法打开文件%s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
-	LOG(LOG_VERBOSE5, "override_file: opened %s!", filename);
+	LOG(LOG_VERBOSE5, "override_file: 已打开%s!", filename);
 	struct stat st;
 	ret = fstat(fd, &st);
 	if (ret) {
@@ -32,10 +32,10 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 	LOG(LOG_VERBOSE5, "override_file: fstat fd %d succeeded!", fd);	
 	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (addr == MAP_FAILED) {
-		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
+		LOG(LOG_ERROR, "映射文件失败%s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
-	LOG(LOG_VERBOSE5, "override_file: Override file mapped successfully");
+	LOG(LOG_VERBOSE5, "override_file: 覆盖文件映射成功");
 	finfo->magic = OVERRIDE_MAGIC;
 	finfo->fd = fd;
 	finfo->len = (unsigned int)st.st_size;;
